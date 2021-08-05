@@ -123,7 +123,7 @@ std::vector<std::string> GC_IR::formatIRCommand(std::string IR_response) {
     return commands;
 }
 
-int main() {
+int main(int argc, char **argv) {
     std::string s =
     "IR Learner Enabledsendir,1:1,0,37000,1,1,166,167,20,63,20,64,19,64,19,23,19,22,20,23,19,23,19,23,19,64,19,64,19,64,19,23,19,23,19,23,19,23,19,23,19,22,20,64,19,23,19,23,19, \
     23,19,23,19,23,19,23,19,63,20,23,19,64,19,63,20,64,19,63,20,64,19,63,20,1729,166,167,20,64,19,64,19,64,19,23,19,23,19,23,19,23,19,23,19,64,19,64,19,64,19, \
@@ -134,7 +134,7 @@ int main() {
     23,19,23,19,23,19,23,19,23,21,21,19,64,19,23,19,23,19,23,19,23,19,23,19,23,19,64,19,23,19,63,20,63,20,64,19,63,20,64,19,64,19,3692\rIR Learner Disabled";
 
     // std::vector<std::string> v = GC_IR::formatIRCommand(s);
-    std::string ss = GC_IR::learnIRCommand("127.0.0.1", 3000);
+    std::string ss = GC_IR::learnIRCommand(argv[1]);
     // std::cout <<  std::endl << ss << std::endl;
     std::vector<std::string> v = GC_IR::formatIRCommand(ss);
     try{
