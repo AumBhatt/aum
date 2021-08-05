@@ -30,7 +30,7 @@ std::string GC_IR::learnIRCommand(std::string host_ip, int host_port = PORT) {
                 boost::asio::ip::address::from_string(host_ip), host_port
             )
         );
-        std::cout << "\nConnected\n";
+        std::cout << "\nConnected\nPress any key to stop listening...\n";
         // system error handler
         boost::system::error_code error;
         // send "get_IRL" message
