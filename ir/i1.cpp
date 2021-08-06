@@ -30,57 +30,66 @@ std::string GC_IR::learnIRCommand(std::string host_ip, int host_port = PORT) {
                 boost::asio::ip::address::from_string(host_ip), host_port
             )
         );
-        std::cout << "\nConnected\nPress any key to stop listening...\n";
         // system error handler
-        boost::system::error_code error;
+        boost::system::error_code getIRL_error;
         // send "get_IRL" message
         boost::asio::write(
             socket,
             boost::asio::buffer("get_IRL\r"),
-            error
+            getIRL_error
         );
-        if(error) {
+        if(getIRL_error) {
             throw "Unable to start learning mode";
         }
-
+        else {
+            std::cout << "\nSocket Connected\nPress ENTER to stop listening...";
+        }
         // start learning thread
         boost::asio::streambuf recieve_buf;
 
-        std::thread(
+        std::thread socketCloseThread(
             [&]() {
-                boost::asio::read(
-                    socket,
-                    recieve_buf,
-                    boost::asio::transfer_all(),
-                    error
-                );
+                boost::system::error_code write_error, shutdownError;
+                if(socket.is_open()) {
+                    std::cin.get();
+                    boost::asio::write(
+                        socket,
+                        boost::asio::buffer("stop_IRL\r"),
+                        write_error
+                    );
+                    socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, shutdownError);
+                    if(!shutdownError) {
+                        std::cout << "\nSocket Disconnected";
+                    }
+                    else {
+                        throw "Error while shutting socket down";
+                    }
+                }     
             }
-        ).detach();
-         if(error) {
-             throw "Unable to receive socket stream messages.";
-         }
+        );
+        socketCloseThread.detach();
+
+        boost::system::error_code read_error;
+        if(socket.is_open()) {            
+            boost::asio::read(
+                socket,
+                recieve_buf,
+                boost::asio::transfer_all(),
+                read_error
+            );
+            if(read_error) {
+                std::cout << "\nSocket read closed";
+            }
+        }
 
         // close socket on click
         // sleep(10);
-        std::cin.get();
-        boost::asio::write(
-            socket,
-            boost::asio::buffer("stop_IRL\r"),
-            error
-        );
-/*         boost::asio::streambuf close_buf;
-        boost::asio::read(
-            socket,
-            close_buf,
-            boost::asio::transfer_all(),
-            error
-        );
-        if(error) {
-            throw "Unable to stop learning mode.";
+        if(socketCloseThread.joinable()) {
+            socketCloseThread.join();
+            socketCloseThread.~thread();
         }
-        std::cout << std::endl << std::string(boost::asio::buffer_cast<const char*>(close_buf.data())) << std::endl;
- */
-        socket.close();
+        if(socket.is_open())
+            socket.close();
         return std::string(boost::asio::buffer_cast<const char*>(recieve_buf.data()));
     }
     catch(const char *ex) {
